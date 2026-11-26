@@ -4,7 +4,19 @@ Plataforma 3D geolocalizada de la antigua fábrica de Bavaria (Kennedy, Bogotá)
 
 Web: https://alejagoguti-cpu.github.io/bavaria-comun/
 
-- `?esc=actual` · `?esc=plan` · `?esc=comun` abre directo un escenario.
+- **Relato con voz** (botón «Ver el relato con voz»): lógica de kennedy-video. Cada frase del guion es un beat con su animación 3D; la grabación (`recursos/audio/guion.m4a`) avanza sola los beats según `src/relato/tiempos.js`.
+  Teclas: → / espacio siguiente frase · ← anterior (reconstruye el estado) · P pausa · T subtítulos · B oculta textos · F pantalla completa · Esc salir · M marca un tiempo (calibrar). La URL guarda la frase (`#6`).
+- `?esc=actual` · `?esc=plan` · `?esc=comun` abre directo un escenario (exploración libre).
+
+### Relato (`src/relato/`)
+| Archivo | Qué hace |
+|---|---|
+| `guion.js` | las 15 frases y la coreografía de cada una (sub-pasos en fracciones de la duración de la frase) |
+| `tiempos.js` | segundo de inicio de cada frase: transcripción Whisper (`docs/fuentes/transcripcion_whisper_guion.json`) + silencios de ffmpeg |
+| `capas.js` | capas 3D animadas: avenidas OSM, borde, torres que crecen, carros, presión inmobiliaria, árboles que se talan, categorías de estructuras, sintaxis antes/después, pasajes y peatones, bosque, NBIC, arcos a colegios/hogares/plazas, huertas en parques, flujos de cosecha |
+| `modulo_hidro.js` | módulo NFT en A que se arma pieza por pieza, agua que circula, lechugas que crecen (medidas de referencia: pendiente la especificación de la autora) |
+| `textos.js` | titulares cinéticos, cifras, tarjetas con íconos lineales, rótulos anclados al 3D |
+| `motor.js` | audio, teclas, URL, HUD |
 
 ## Ejecutar localmente
 

@@ -1,6 +1,7 @@
 /* ESCENARIO 00 · ESTADO ACTUAL: la malla fotorrealista de Google ES la fábrica de hoy (naves, tanques, bosque).
    Encima: el borde del predio (OSM) y las huellas de las 29 edificaciones industriales, seleccionables. */
 import * as THREE from 'three';
+import { logd } from '../escena/logdepth.js';
 import { WP, cargarJSON, areaPoligono } from '../escena/geo.js';
 
 const ESTADO = { esqueleto: 'Nave en demolición (esqueleto)', nave: 'Nave industrial', torre: 'Torre', bodega: 'Bodega' };
@@ -18,9 +19,9 @@ export async function crearEstadoActual({ scene }) {
   for (let i = 0; i < sitio.length; i++) { const a = sitio[i], b = sitio[(i + 1) % sitio.length];
     pos.push(a[0], 0, a[1], b[0], 0, b[1], b[0], H, b[1], a[0], 0, a[1], b[0], H, b[1], a[0], H, a[1]); uv.push(0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1); }
   const gc = new THREE.BufferGeometry(); gc.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); gc.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  const mc = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, uniforms: { uA: { value: 0.35 } },
+  const mc = logd(new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, uniforms: { uA: { value: 0.35 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
-    fragmentShader: 'varying vec2 vUv; uniform float uA; void main(){ gl_FragColor = vec4(0.78,1.0,0.15, uA * pow(1.0 - vUv.y, 2.2)); }' });
+    fragmentShader: 'varying vec2 vUv; uniform float uA; void main(){ gl_FragColor = vec4(0.78,1.0,0.15, uA * pow(1.0 - vUv.y, 2.2)); }' }));
   const cortina = new THREE.Mesh(gc, mc); g.add(cortina);
 
   // edificaciones existentes: volumen casi invisible que solo se ilumina al pasar el mouse / seleccionar

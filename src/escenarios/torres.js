@@ -66,25 +66,26 @@ export async function crearTorres({ plan, renderer, grupo }) {
   }
 
   /* instancias: por muro (ladrillo/blanco) y por módulo; cada primitiva del GLB = un InstancedMesh con su material */
-  const sel = [], m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), Y = new THREE.Vector3(0, 1, 0), uno = new THREE.Vector3(1, 1, 1);
+  const inst = [], sel = [], m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), Y = new THREE.Vector3(0, 1, 0), uno = new THREE.Vector3(1, 1, 1);
   for (const muro of ['ladrillo', 'blanco']) {
     const T = torres.filter(t => t.muro === muro); if (!T.length) continue;
     const mats = { baja: [], piso: [], cubierta: [], alero: [] };
     for (const t of T) {
       q4.setFromAxisAngle(Y, -t.ang);
       const esc = new THREE.Vector3(t.esc, 1, t.esc), base = (y) => m4.clone().compose(new THREE.Vector3(t.x, y, t.z), q4, esc);
-      mats.baja.push(base(0)); mats.alero.push(base(0));
-      for (let p = 0; p < t.pisos; p++) mats.piso.push(base(H_BAJA + p * H_PISO));
-      mats.cubierta.push(base(H_BAJA + t.pisos * H_PISO));
+      mats.baja.push([base(0), 0]); mats.alero.push([base(0), 0]);
+      for (let p = 0; p < t.pisos; p++) mats.piso.push([base(H_BAJA + p * H_PISO), H_BAJA + p * H_PISO]);
+      mats.cubierta.push([base(H_BAJA + t.pisos * H_PISO), H_BAJA + t.pisos * H_PISO]);
     }
     for (const nombre of Object.keys(mats)) {
       const nodo = gl.scene.getObjectByName(nombre); if (!nodo) continue;
+      const lista = mats[nombre].sort((x, y) => x[1] - y[1]), ys = lista.map(x => x[1]);
       const prims = []; nodo.traverse(o => { if (o.isMesh) prims.push(o); });
       for (const pr of prims) {
-        const im = new THREE.InstancedMesh(pr.geometry, matDe(pr.material.name, muro), mats[nombre].length);
-        mats[nombre].forEach((mm, i) => im.setMatrixAt(i, mm));
-        im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false;
-        grupo.add(im);
+        const im = new THREE.InstancedMesh(pr.geometry, matDe(pr.material.name, muro), lista.length);
+        lista.forEach(([mm], i) => im.setMatrixAt(i, mm));
+        im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; im.userData.ys = ys;
+        grupo.add(im); inst.push(im);
       }
     }
   }
@@ -93,5 +94,8 @@ export async function crearTorres({ plan, renderer, grupo }) {
     const h = H_BAJA + t.pisos * H_PISO + 1.5, g = new THREE.BoxGeometry(LX * t.esc, h, LY * t.esc); g.translate(0, h / 2, 0);
     const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: '#C7FF27', transparent: true, opacity: 0, depthWrite: false })); m.position.set(t.x, 0, t.z); m.rotation.y = -t.ang; m.userData = t.ud; grupo.add(m); sel.push(m);
   }
-  return { seleccionables: sel, torres, materiales: M };
+  /* crecimiento: muestra solo los módulos por debajo de la altura h (las instancias están ordenadas por altura) */
+  const crecer = (h) => { for (const im of inst) { const ys = im.userData.ys; let lo = 0, hi = ys.length; while (lo < hi) { const m = (lo + hi) >> 1; if (ys[m] <= h) lo = m + 1; else hi = m; } im.count = lo; } for (const m of sel) m.visible = h > 60; };
+  const hMax = Math.max(...torres.map(t => H_BAJA + t.pisos * H_PISO)) + 1;
+  return { seleccionables: sel, torres, materiales: M, crecer, hMax };
 }

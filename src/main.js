@@ -7,6 +7,10 @@ import { crearMalla } from './escena/malla.js';
 import { crearEstadoActual } from './escenarios/estado_actual.js';
 import { crearPlanParcial } from './escenarios/plan_parcial.js';
 import { crearUI } from './ui/ui.js';
+import { gsap } from 'gsap';
+import { crearCapas } from './relato/capas.js';
+import { crearTextos } from './relato/textos.js';
+import { crearMotor } from './relato/motor.js';
 
 const MOVIL = matchMedia('(max-width: 760px)').matches;
 const RMQ = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -36,7 +40,7 @@ new RGBELoader().load('texturas/cielo/cielo_2k.hdr', (hdr) => { const pm = new T
 sol.position.set(PX - 700, 1500, PZ + 500); sol.target.position.set(PX, 0, PZ);
 
 const ctl = new MapControls(cam, renderer.domElement);
-ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.maxPolarAngle = Math.PI * 0.47; ctl.minDistance = 30; ctl.maxDistance = 40000;
+ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.maxPolarAngle = Math.PI * 0.47; ctl.minDistance = 3; ctl.maxDistance = 40000;
 ctl.screenSpacePanning = false;
 
 /* ---------- vistas de cámara (mundo) ---------- */
@@ -48,6 +52,8 @@ const V = {
   predio: { p: [PX + 650, 820, PZ + 1150], t: [PX, 0, PZ] },
   torres: { p: [PX - 260, 150, PZ + 420], t: [PX - 60, 40, PZ + 120] },
   predioAlto: { p: [PX + 120, 1900, PZ + 600], t: [PX, 0, PZ] },
+  predioBajo: { p: [PX + 420, 330, PZ + 620], t: [PX - 40, 0, PZ - 40] },
+  kennedyMedio: { p: [PX - 900, 3200, PZ + 3400], t: [PX - 1800, 0, PZ - 300] },
 };
 const vista = (v) => { cam.position.set(...v.p); ctl.target.set(...v.t); cam.lookAt(ctl.target); };
 vista(V.bogota);
@@ -69,6 +75,27 @@ try {
 } catch (e) { console.warn(e); ui.aviso('No cargó la malla fotorrealista de Google. Se muestra solo el modelo propio.'); }
 const E0 = await crearEstadoActual({ scene });
 const E1 = await crearPlanParcial({ scene, renderer });
+/* ---------- relato (guion con voz) ---------- */
+const X = { THREE, gsap, scene, cam, ctl, malla, E0, E1, ui, V };
+X.vista = (k) => { vuelo = null; vista(V[k]); };
+X.volar = (k, d = 3) => volar(V[k], Math.max(0.6, d));
+X.volarA = ([x, z, , y = 0], dist, d = 2.5) => volar(dist < 15 ? { p: [x + dist * 0.95, y + 1.6 + dist * 0.28, z + dist * 1.15], t: [x, y + 0.9, z] } : { p: [x + dist * 0.9, y + dist * 0.75, z + dist * 1.1], t: [x, y + dist * 0.12, z] }, Math.max(0.6, d));
+X.edif = (k) => X.C.edifNBIC(k);
+X.enfocar = (k, d = 2.5) => { const v = X.C.edifNBIC(k); if (!v) return; const [x, z] = v.userData.c, h = v.userData.h; volar({ p: [x + 110, h + 95, z + 150], t: [x, h * 0.4, z] }, Math.max(0.6, d)); };
+X.suelo = (x, z) => { if (!malla) return 0; const r = new THREE.Raycaster(new THREE.Vector3(x, 400, z), new THREE.Vector3(0, -1, 0)); const h = r.intersectObject(malla.tiles.group, true)[0]; return h && Math.abs(h.point.y) < 60 ? h.point.y : 0; };
+X.puntoLab = (k) => { const v = X.C.edifNBIC(k), [x, z] = v.userData.c; return [x + 26, z + 26, 0.6, X.suelo(x + 26, z + 26)]; };
+X.rotuloAv = (nom) => { const g = X.C.avenidas[nom]; if (g && g.userData.rotulo) X.T.rotulo(nom, [g.userData.rotulo[0], 24, g.userData.rotulo[1]], { c: '#F5F3EB', ic: 'auto' }); };
+X.redMercados = (on, d = 3) => { X.C.verArcos(X.C.arcosMercados, on, d); if (on) X.C.plazas.forEach((q, i) => X.T.rotulo(q.n, [q.w[0], 30, q.w[1]], { ic: 'mercado', c: '#38bdf8', delay: i * 0.08 })); };
+X.estado = ({ torres = false, borde = false } = {}) => {
+  X.T.limpiar(); X.C.limpiar(0.6); X.ui.info(null);
+  if (X.C.alturaTorres.h > 0 !== torres) X.C.torresYa(torres);
+  gsap.killTweensOf(X.C.borde.material.uniforms.uP); X.C.borde.material.uniforms.uP.value = borde ? 1 : 0; X.C.borde.material.uniforms.uA.value = borde ? 1 : 0;
+  E0.cortina.visible = false; E0.linea.visible = false;
+};
+X.C = await crearCapas(X);
+X.T = crearTextos(X);
+const relato = crearMotor(X); X.relato = relato;
+document.getElementById('btn-relato').onclick = () => { relato.empezar(Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1)); };
 if (malla) malla.puntosCalle = E0.sitio.filter((_, i) => i % 3 === 0).map(([x, z]) => [x + (x - PX) * 0.04, z + (z - PZ) * 0.04]);
 
 /* ---------- escenarios ---------- */
@@ -88,6 +115,7 @@ const rc = new THREE.Raycaster(), mouse = new THREE.Vector2();
 let resaltado = null;
 const seleccionables = () => actual === 'plan' ? E1.seleccionables : actual === 'actual' ? E0.seleccionables : [];
 function tocar(ev, clic) {
+  if (relato.activo) { if (clic) relato.siguiente(); return; }
   const r = renderer.domElement.getBoundingClientRect();
   mouse.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   rc.setFromCamera(mouse, cam);
@@ -116,7 +144,7 @@ renderer.domElement.addEventListener('pointerup', (e) => { if (abajo && Math.hyp
 renderer.domElement.addEventListener('pointermove', (e) => { if (!MOVIL && !abajo) tocar(e, false); });
 
 /* ---------- acciones de la interfaz ---------- */
-ui.on('escenario', (k) => escenario(k));
+ui.on('escenario', (k) => { if (relato.activo) relato.salir(); E0.cortina.visible = E0.linea.visible = true; X.C.torresYa(false); escenario(k); });
 ui.on('reset', () => volar(V.predio, 1.8));
 ui.on('cenital', () => volar(V.predioAlto, 1.8));
 ui.on('pantalla', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
@@ -148,6 +176,7 @@ renderer.setAnimationLoop(() => {
     if (vuelo.t >= 1) { const f = vuelo.fin; vuelo = null; f(); }
   } else ctl.update();
   E0.cortina.material.uniforms.uA.value = 0.22 + 0.12 * Math.sin(performance.now() / 900);
+  X.C.paso(dt); X.T.paso();
   if (malla) malla.actualizar(dt);
   renderer.render(scene, cam);
 });
@@ -156,5 +185,5 @@ addEventListener('resize', () => { cam.aspect = innerWidth / innerHeight; cam.up
 // enlaces directos: ?esc=plan|actual|comun salta la introducción
 const q = new URLSearchParams(location.search).get('esc');
 if (q && ESC[q]) { ui.hero(false); vista(V.predio); escenario(q, { vuela: false }); }
-else { escenario('actual', { vuela: false }); ui.hero(true); }
-window.BAV = { cam, ctl, scene, malla, E0, E1, escenario, volar, V };
+else { escenario('actual', { vuela: false }); ui.hero(true); if (/^#d+$/.test(location.hash)) document.getElementById('btn-relato').lastChild.textContent = ` Continuar en la frase ${location.hash.slice(1)}`; }
+window.BAV = { cam, ctl, scene, malla, E0, E1, escenario, volar, V, X, relato };

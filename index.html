@@ -15,6 +15,7 @@
   "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
   "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
   "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+  "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js",
   "3d-tiles-renderer": "https://unpkg.com/3d-tiles-renderer@0.3.45/src/index.js",
   "3d-tiles-renderer/plugins": "https://unpkg.com/3d-tiles-renderer@0.3.45/src/plugins/index.js"
 } }
@@ -49,7 +50,8 @@
   <h1>BAVARIA<br>COMÚN</h1>
   <p class="sub">Distrito de Tecnologías Convergentes</p>
   <p class="lema">Un territorio. Dos futuros posibles.</p>
-  <button id="btn-entrar" class="primario"><svg viewBox="0 0 24 24"><path d="M12 3v14M5 12l7 7 7-7"/></svg>Volar al predio</button>
+  <div class="botones"><button id="btn-relato" class="primario"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg> Ver el relato con voz</button>
+  <button id="btn-entrar" class="secundario"><svg viewBox="0 0 24 24"><path d="M12 3v14M5 12l7 7 7-7"/></svg>Volar al predio</button></div>
   <div class="accesos">
     <button data-esc="actual"><b>00</b>Explorar el estado actual</button>
     <button data-esc="plan"><b>01</b>Explorar el futuro sin propuesta</button>
@@ -79,6 +81,17 @@
 <!-- ficha del elemento -->
 <aside id="ficha"><button class="cerrar" aria-label="Cerrar">×</button><div class="cuerpo"></div></aside>
 
+<!-- relato -->
+<div id="relato-capa"></div>
+<p id="relato-sub"></p>
+<div id="relato-hud">
+  <button data-r="ant" aria-label="Frase anterior"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+  <button data-r="play" aria-label="Reproducir o pausar"><svg class="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg><svg class="i-pausa" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+  <button data-r="sig" aria-label="Frase siguiente"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  <span class="num mono">01 / 15</span>
+  <div class="pista"><div class="barra"><i></i></div><div class="puntos"></div></div>
+  <button data-r="salir" aria-label="Salir del relato"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
 <div id="carga"><i></i><span></span></div>
 <div id="toast" role="status"></div>
 

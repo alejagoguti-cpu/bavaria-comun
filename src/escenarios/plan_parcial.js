@@ -45,5 +45,5 @@ export async function crearPlanParcial({ scene, renderer }) {
   // exteriores a recortar de la malla = borde del plan; se conserva el bosque (CAPRP)
   const exteriores = [P.borde.map(WP)];
   const huecos = P.zonas.filter(z => z.tipo === 'bosque').flatMap(z => z.p.map(q => q.o.map(WP)));
-  return { grupo: g, seleccionables: sel, exteriores, huecos, total_viviendas: P.total_viviendas, fuente: P.fuente };
+  return { grupo: g, torres: T, seleccionables: sel, exteriores, huecos, total_viviendas: P.total_viviendas, fuente: P.fuente };
 }

@@ -101,3 +101,53 @@ dialog#fuentes .nota { margin-top: 16px; font-size: 13px; color: var(--gris); }
   #ficha { left: 16px; right: 16px; top: 70px; width: auto; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ===== relato ===== */
+.botones { display: flex; gap: 10px; flex-wrap: wrap; }
+.secundario { display: inline-flex; gap: 10px; align-items: center; padding: 13px 20px; border: 1px solid var(--linea); background: var(--vidrio); border-radius: 999px; font-weight: 500; }
+.secundario:hover { border-color: var(--lima); }
+#relato-capa { position: fixed; inset: 0; z-index: 12; pointer-events: none; }
+.en-relato #rotulo, .en-relato #ficha { opacity: 0 !important; pointer-events: none; }
+.en-relato #relato-capa { left: var(--sb); }
+.sin-textos #relato-capa { display: none; }
+.r-titulo { position: absolute; }
+.r-titulo h2 { font: 800 clamp(30px, 4.2vw, 64px)/1 var(--display); letter-spacing: -.025em; text-shadow: 0 2px 30px rgba(0,0,0,.55); }
+.r-titulo.chico h2 { font: 600 clamp(18px, 1.8vw, 26px)/1.2 var(--sans); }
+.r-titulo em { font-style: normal; color: var(--lima); }
+.r-titulo .mono { margin-bottom: 10px; color: rgba(245,243,235,.8); text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+.pal { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .06em; }
+.pal > span { display: inline-block; }
+.r-dato { position: absolute; padding: 12px 16px; background: var(--vidrio); backdrop-filter: blur(10px); border-left: 2px solid var(--lima); }
+.r-dato b { font: 800 clamp(30px, 3.2vw, 48px)/1 var(--display); color: var(--lima); }
+.r-dato p { font-size: 14px; margin-top: 4px; }
+.r-dato i { display: block; font-style: normal; margin-top: 6px; font-size: 10px; }
+.r-tarjeta { position: absolute; display: flex; gap: 12px; align-items: center; padding: 11px 14px; background: var(--vidrio); backdrop-filter: blur(10px); border: 1px solid; border-radius: 10px; }
+.r-tarjeta .ic { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 9px; background: rgba(255,255,255,.05); }
+.r-tarjeta .ic svg { width: 26px; height: 26px; }
+.r-tarjeta h3 { font: 600 15px/1.25 var(--sans); }
+.r-rotulo { position: fixed; left: 0; top: 0; display: flex; gap: 6px; align-items: center; padding: 5px 9px 5px 7px; margin: -14px 0 0 -10px; background: rgba(8,9,12,.78); border: 1px solid var(--c); border-radius: 999px; font: 500 12px var(--sans); white-space: nowrap; color: var(--marfil); transform-origin: 0 50%; }
+.r-rotulo svg { width: 15px; height: 15px; stroke: var(--c); }
+.r-rotulo.punto { padding: 4px; } .r-rotulo.punto span { display: none; }
+#relato-sub { position: fixed; left: calc(var(--sb) + 7vw); right: 22vw; bottom: 86px; z-index: 13; font-size: clamp(14px, 1.15vw, 18px); line-height: 1.45; color: rgba(245,243,235,.92); text-shadow: 0 1px 12px rgba(0,0,0,.85); display: none; }
+.en-relato #relato-sub { display: block; } .sin-sub #relato-sub { display: none !important; }
+#relato-hud { position: fixed; left: calc(var(--sb) + 24px); right: 24px; bottom: 20px; z-index: 16; display: none; align-items: center; gap: 8px; padding: 8px 10px; background: var(--vidrio); backdrop-filter: blur(12px); border: 1px solid var(--linea); border-radius: 12px; }
+.en-relato #relato-hud { display: flex; }
+#relato-hud > button { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px; }
+#relato-hud > button:hover { background: rgba(199,255,39,.12); color: var(--lima); }
+#relato-hud .i-pausa { display: none; } #relato-hud [data-r="play"].on .i-pausa { display: block; } #relato-hud [data-r="play"].on .i-play { display: none; }
+#relato-hud .num { min-width: 64px; color: var(--marfil); }
+#relato-hud .pista { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+#relato-hud .barra { height: 4px; background: rgba(245,243,235,.12); border-radius: 2px; cursor: pointer; }
+#relato-hud .barra i { display: block; height: 100%; width: 0; background: var(--lima); border-radius: 2px; }
+#relato-hud .puntos { display: flex; gap: 4px; }
+#relato-hud .puntos button { flex: 1; height: 6px; border-radius: 3px; background: rgba(245,243,235,.16); }
+#relato-hud .puntos button.on { background: rgba(199,255,39,.55); }
+.en-relato #herramientas { top: 40%; }
+@media (max-width: 760px) {
+  .en-relato #relato-capa { left: 0; }
+  .r-titulo { left: 16px !important; width: calc(100vw - 32px) !important; }
+  .r-tarjeta, .r-dato { left: 16px !important; width: auto !important; max-width: calc(100vw - 90px); transform: scale(.9); transform-origin: 0 0; }
+  #relato-sub { left: 16px; right: 16px; bottom: 76px; font-size: 13px; }
+  #relato-hud { left: 10px; right: 10px; bottom: 10px; }
+  #relato-hud .num { display: none; }
+}

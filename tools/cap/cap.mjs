@@ -1,7 +1,7 @@
 // Captura de verificación: node tools/cap/cap.mjs <salida.png> [query] [espera_s] [js]
 import { createRequire } from 'module'; const puppeteer = createRequire('C:/Users/aleja/Documents/BACO-OBRA/package.json')('puppeteer-core');
 const [out, q = '', s = '25', js = ''] = process.argv.slice(2);
-const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', protocolTimeout: 170000, args: ['--use-angle=d3d11', '--ignore-gpu-blocklist'] });
+const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', protocolTimeout: 170000, args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage(); await p.setViewport({ width: 1600, height: 900 }); const errs = [];
 p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' || m.type() === 'warn') errs.push(m.text()); });
 p.on('requestfailed', r => errs.push('FALLA ' + r.url()));
