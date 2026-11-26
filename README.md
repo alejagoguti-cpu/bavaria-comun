@@ -33,7 +33,7 @@ Abrir http://localhost:8093. Verificación con captura: `node tools/cap/cap.mjs 
 | 2 Investigación | iniciada — `docs/fuentes/inventario.md` |
 | 3 Georreferenciación | hecha — mismo marco del simulador, malla calibrada al suelo |
 | 4 Estado actual | malla real + borde y huellas seleccionables |
-| 5 Futuro sin propuesta | huellas oficiales extruidas; falta arquitectura detallada (Blender + PBR) |
+| 5 Futuro sin propuesta | 93 torres modeladas en Blender (`tools/blender/torre_modulos.py` → `modelos/plan/torre.glb`), PBR de Poly Haven, implantadas en las manzanas oficiales según el render oficial (`docs/fuentes/render_oficial_plan_parcial.avif`). Faltan: árboles entre torres, variación de fachadas, LOD para celular |
 | 6 Bavaria Común | **pendiente de los archivos de la autora** — `docs/pendientes_autora.md` |
 | 7–14 | por hacer |
 

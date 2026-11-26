@@ -14,6 +14,8 @@ Confiabilidad: A = oficial vigente · B = oficial histórica o derivada con mét
 | 8 | Copas de árbol (3.250) | Esri World Imagery z19, detección propia | 2026 | https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9 | — | Bosque existente | `data/predio/bavaria_arboles.json` | B |
 | 9 | Sintaxis espacial angular (NAIN, NACH, R800) | Cálculo propio, método DepthmapX sobre OSM | 2026 | https://github.com/SpaceGroupUCL/depthmapX | — | Antes / después de los pasajes | `data/sintaxis/` | B |
 | 10 | Colegios, mercados, equipamiento social | OSM + IPES plazas de mercado 2024 | 2024–2026 | https://www.ipes.gov.co | — | Nodos de la red territorial | `data/red/bavaria_red.json` | B |
+| 12 | Render oficial del desarrollo (torres de ladrillo terracota y blancas entre el bosque) | Promotor / Distrito — origen por confirmar | — | aportado por la autora | — | Tipología: torres sueltas ~15–22 pisos, podios con cubierta verde | lectura tipológica para `modelos/plan/torre.glb` | B (falta enlace original) |
+| 13 | Texturas PBR y cielo HDRI (red_brick_03, white_plaster_02, concrete_wall_008, leafy_grass, kloofendal_48d_partly_cloudy_puresky) | Poly Haven (CC0) | 2026 | https://polyhaven.com | — | Materiales | `texturas/` | — |
 | 11 | Roco y Bainbridge (2002), *Converging Technologies for Improving Human Performance* (NBIC) | NSF / DOC | 2002 | https://www.wtec.org/ConvergingTechnologies/Report/NBIC_report.pdf | — | Marco NBIC | — | A |
 
 La Fase 2 amplía y verifica esta tabla (SDP, SINUPOT, IDECA, Datos Abiertos, Catastro, constructoras).

@@ -1,6 +1,7 @@
 /* BAVARIA COMÚN · plataforma 3D (urbia). Fase actual: landing con vuelo Bogotá → Kennedy → predio y escenarios 00 y 01. */
 import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { W, PREDIO_C, deLL } from './escena/geo.js';
 import { crearMalla } from './escena/malla.js';
 import { crearEstadoActual } from './escenarios/estado_actual.js';
@@ -24,12 +25,14 @@ scene.fog = new THREE.Fog('#a9b8c4', 14000, 70000); // bruma de la sabana
 const cam = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 2, 120000);
 
 // luz de Bogotá (4,6° N): sol alto, cielo nublado frecuente
-const hemi = new THREE.HemisphereLight('#dfe8f0', '#4a4a40', 1.4); scene.add(hemi);
-const sol = new THREE.DirectionalLight('#fff3e0', 2.4); sol.castShadow = true;
+const hemi = new THREE.HemisphereLight('#dfe8f0', '#4a4a40', 0.7); scene.add(hemi);
+const sol = new THREE.DirectionalLight('#fff3e0', 3.2); sol.castShadow = true;
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, { left: -900, right: 900, top: 900, bottom: -900, near: 10, far: 4000 });
 sol.shadow.bias = -0.0004; scene.add(sol, sol.target);
 
 const [PX, PZ] = W(PREDIO_C[0], PREDIO_C[1]);
+// entorno: cielo parcialmente nublado (Poly Haven, CC0) para reflejos de vidrio y luz ambiente de los materiales PBR
+new RGBELoader().load('texturas/cielo/cielo_2k.hdr', (hdr) => { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromEquirectangular(hdr).texture; scene.environmentIntensity = 0.35; hdr.dispose(); pm.dispose(); });
 sol.position.set(PX - 700, 1500, PZ + 500); sol.target.position.set(PX, 0, PZ);
 
 const ctl = new MapControls(cam, renderer.domElement);
@@ -43,6 +46,7 @@ const V = {
   bogota: { p: [BX + 9000, 26000, BZ + 21000], t: [BX - 2000, 0, BZ] },
   kennedy: { p: [KX + 2600, 5200, KZ + 6200], t: [KX, 0, KZ] },
   predio: { p: [PX + 650, 820, PZ + 1150], t: [PX, 0, PZ] },
+  torres: { p: [PX - 260, 150, PZ + 420], t: [PX - 60, 40, PZ + 120] },
   predioAlto: { p: [PX + 120, 1900, PZ + 600], t: [PX, 0, PZ] },
 };
 const vista = (v) => { cam.position.set(...v.p); ctl.target.set(...v.t); cam.lookAt(ctl.target); };
@@ -120,7 +124,7 @@ ui.on('luz', (k) => {
   const L = { amanecer: ['#ffd2a8', 1.4, -1, 0.35, 0.82], manana: ['#fff1dc', 2.2, -0.6, 0.8, 0.95], mediodia: ['#ffffff', 2.6, 0.05, 1.0, 1.0],
     atardecer: ['#ffb27a', 1.5, 1, 0.3, 0.8], noche: ['#7d95c8', 0.25, 0.6, 0.6, 0.32] }[k];
   sol.color.set(L[0]); sol.intensity = L[1]; const a = L[2] * 1300;
-  sol.position.set(PX + a, 300 + 1300 * L[3], PZ + 400); hemi.intensity = 0.4 + L[4] * 1.0;
+  sol.position.set(PX + a, 300 + 1300 * L[3], PZ + 400); hemi.intensity = 0.2 + L[4] * 0.5;
   if (malla) malla.U.uLuz.value.set(L[0]).lerp(new THREE.Color(1, 1, 1), 0.65).multiplyScalar(L[4]);
   const cielo = { amanecer: '#d9b9a3', manana: '#a9bccb', mediodia: '#9fb3c4', atardecer: '#c99f84', noche: '#121822' }[k];
   scene.background.set(cielo); scene.fog.color.set(cielo);
