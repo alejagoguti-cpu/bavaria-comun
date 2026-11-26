@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08090C">
+<title>Bavaria Común · urbia</title>
+<meta name="description" content="Bavaria Común, Distrito de Tecnologías Convergentes en la antigua fábrica de Bavaria (Kennedy, Bogotá). Un territorio, dos futuros posibles.">
+<link rel="icon" href="recursos/marca/urbia_logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/ui/estilo.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+  "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+  "3d-tiles-renderer": "https://unpkg.com/3d-tiles-renderer@0.3.45/src/index.js",
+  "3d-tiles-renderer/plugins": "https://unpkg.com/3d-tiles-renderer@0.3.45/src/plugins/index.js"
+} }
+</script>
+</head>
+<body class="con-hero">
+<div id="escena"></div>
+
+<!-- sidebar -->
+<button id="menu-btn" aria-label="Menú"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<nav id="sidebar" aria-label="Secciones">
+  <a class="marca" href="./"><img src="recursos/marca/urbia_logo.svg" alt="urbia"></a>
+  <ol>
+    <li><button data-s="inicio"><b>00</b>Inicio</button></li>
+    <li><button data-s="actual"><b>01</b>Estado actual</button></li>
+    <li><button data-s="plan"><b>02</b>Futuro sin propuesta</button></li>
+    <li><button data-s="comun"><b>03</b>Bavaria Común</button></li>
+    <li><button data-s="comparar" class="pronto"><b>04</b>Comparar escenarios</button></li>
+    <li><button data-s="transformacion" class="pronto"><b>05</b>Transformación arquitectónica</button></li>
+    <li><button data-s="sintaxis" class="pronto"><b>06</b>Sintaxis espacial</button></li>
+    <li><button data-s="nbic" class="pronto"><b>07</b>Tecnologías convergentes</button></li>
+    <li><button data-s="huertas" class="pronto"><b>08</b>Huertas hidropónicas</button></li>
+    <li><button data-s="red" class="pronto"><b>09</b>Red territorial</button></li>
+    <li><button data-s="simulador" class="pronto"><b>10</b>Simulador</button></li>
+    <li><button data-s="fuentes"><b>11</b>Fuentes documentales</button></li>
+  </ol>
+</nav>
+
+<!-- portada -->
+<section id="hero">
+  <p class="mono kicker">Kennedy · Bogotá · 4.63° N 74.15° O</p>
+  <h1>BAVARIA<br>COMÚN</h1>
+  <p class="sub">Distrito de Tecnologías Convergentes</p>
+  <p class="lema">Un territorio. Dos futuros posibles.</p>
+  <button id="btn-entrar" class="primario"><svg viewBox="0 0 24 24"><path d="M12 3v14M5 12l7 7 7-7"/></svg>Volar al predio</button>
+  <div class="accesos">
+    <button data-esc="actual"><b>00</b>Explorar el estado actual</button>
+    <button data-esc="plan"><b>01</b>Explorar el futuro sin propuesta</button>
+    <button data-esc="comun"><b>02</b>Explorar Bavaria Común</button>
+    <button id="btn-comparar"><b>⇆</b>Comparar escenarios</button>
+  </div>
+</section>
+
+<!-- rótulo del escenario -->
+<aside id="rotulo">
+  <p class="mono"><span id="esc-num">00</span> · <span id="esc-clase"></span></p>
+  <h2 id="esc-nom">Estado actual</h2>
+  <p id="esc-txt"></p>
+</aside>
+
+<!-- herramientas -->
+<div id="herramientas" role="toolbar" aria-label="Herramientas 3D">
+  <button data-h="reset" data-tip="Restablecer cámara"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+  <button data-h="cenital" data-tip="Vista cenital"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/></svg></button>
+  <button data-h="luz" data-tip="Iluminación"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+  <button data-h="pantalla" data-tip="Pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <div id="luces">
+    <button data-l="amanecer">Amanecer</button><button data-l="manana">Mañana</button><button data-l="mediodia" class="activo">Mediodía</button><button data-l="atardecer">Atardecer</button><button data-l="noche">Noche</button>
+  </div>
+</div>
+
+<!-- ficha del elemento -->
+<aside id="ficha"><button class="cerrar" aria-label="Cerrar">×</button><div class="cuerpo"></div></aside>
+
+<div id="carga"><i></i><span></span></div>
+<div id="toast" role="status"></div>
+
+<dialog id="fuentes">
+  <button class="cerrar" aria-label="Cerrar">×</button>
+  <p class="mono">11 · Fuentes documentales</p>
+  <h2>De dónde sale cada cosa</h2>
+  <ul>
+    <li><b>Decreto Distrital 448 de 2023</b> — modificación del Plan Parcial Bavaria Fábrica (SDP). Plano 1/2 «Propuesta general», 1:2500: <a href="https://www.sdp.gov.co/sites/default/files/bavaria_fabrica_plano_1.pdf" target="_blank" rel="noopener">PDF</a>. <i>Documentada</i></li>
+    <li><b>Alturas del escenario 01</b> — supuesto por tipo (VIS/VIP 12 pisos, tipo 4: 10, múltiple 8, comercio 4): el decreto deja la altura «resultante». <i>Supuesto</i></li>
+    <li><b>Predio y edificaciones existentes</b> — OpenStreetMap (ODbL). <i>Reconstruida</i></li>
+    <li><b>Bosque</b> — 3.250 copas detectadas en Esri World Imagery z19. <i>Reconstruida</i></li>
+    <li><b>Ciudad</b> — Google Photorealistic 3D Tiles.</li>
+    <li><b>NBIC</b> — Roco y Bainbridge (2002), <a href="https://www.wtec.org/ConvergingTechnologies/Report/NBIC_report.pdf" target="_blank" rel="noopener">Converging Technologies</a>.</li>
+  </ul>
+  <p class="nota">Inventario completo: <a href="https://github.com/alejagoguti-cpu/bavaria-comun/blob/main/docs/fuentes/inventario.md" target="_blank" rel="noopener">docs/fuentes/inventario.md</a></p>
+</dialog>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
