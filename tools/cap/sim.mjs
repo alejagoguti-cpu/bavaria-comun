@@ -1,0 +1,11 @@
+import { createRequire } from 'module'; const puppeteer = createRequire('C:/Users/aleja/Documents/BACO-OBRA/package.json')('puppeteer-core');
+const [dir] = process.argv.slice(2);
+const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', protocolTimeout: 300000, args: ['--use-angle=d3d11', '--ignore-gpu-blocklist'] });
+const p = await b.newPage(); await p.setViewport({ width: 1600, height: 900 });
+await p.goto('https://anasoficasca-code.github.io/simulador/', { waitUntil: 'domcontentloaded' }); await new Promise(r => setTimeout(r, 30000));
+const clic = async (txt) => { await p.evaluate((txt) => { const e = [...document.querySelectorAll('button,a')].find(e => e.textContent.trim() === txt); if (e) e.click(); }, txt); await new Promise(r => setTimeout(r, 12000)); };
+await clic('Iniciar'); await p.screenshot({ path: dir + '/sim1.png' });
+await clic('Render'); await p.screenshot({ path: dir + '/sim2.png' });
+await clic('Maqueta 3D'); await p.screenshot({ path: dir + '/sim3.png' });
+console.log(await p.evaluate(() => [...document.querySelectorAll('button,a')].map(e => e.textContent.trim()).filter(Boolean).slice(0, 50).join(' | ')));
+await b.close();

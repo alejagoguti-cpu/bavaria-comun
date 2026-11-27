@@ -11,7 +11,7 @@ export async function crearArbolesPlan({ plan, grupo, torres }) {
   const q1 = new THREE.PlaneGeometry(1, 1); q1.translate(0, 0.5, 0); const q2 = q1.clone().rotateY(Math.PI / 2);
   const geo = mergeGeometries([q1, q2]);
   const dentro = (p, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[i], b = P[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
-  const libre = (x, z) => !torres.some(t => Math.hypot(t.x - x, t.z - z) < 21 * (t.esc || 1));
+  const libre = (x, z) => !torres.some(t => { const dx = x - t.x, dz = z - t.z, c = Math.cos(t.ang), s = Math.sin(t.ang), u = dx * c + dz * s, v = -dx * s + dz * c; return Math.abs(u) < 14 * (t.sx || 1) + 4 && Math.abs(v) < 8.5 * (t.esc || 1) + 4; });
   let s = 11; const azar = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const sitios = plan.arboles_nuevos.map(a => WP(a)).filter(([x, z]) => libre(x, z));
   for (const z of plan.zonas) {

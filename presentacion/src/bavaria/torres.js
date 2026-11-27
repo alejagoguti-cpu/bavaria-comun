@@ -19,8 +19,8 @@ export async function crearTorres({ plan, renderer, grupo }) {
   const ani = renderer.capabilities.getMaxAnisotropy();
   const gl = await new GLTFLoader().loadAsync('./bavaria/modelos/torre.glb');
   const M = {
-    ladrillo: pbr('red_brick_03', 1 / 1.2, ani, { color: '#b9876c', roughness: 0.95 }),
-    blanco: pbr('white_plaster_02', 1 / 2.2, ani, { color: '#ffffff', emissive: '#2a2a2a', emissiveIntensity: 0.25 }),
+    ladrillo: pbr('red_brick_03', 1 / 1.2, ani, { color: '#a87458', roughness: 0.95 }),
+    blanco: pbr('white_plaster_02', 1 / 2.2, ani, { color: '#ffffff', emissive: '#ffffff', emissiveIntensity: 0.22 }),
     losa: pbr('concrete_wall_008', 1 / 3, ani, { color: '#eceae5' }),
     verde: pbr('leafy_grass', 1 / 2, ani),
     vidrio: new THREE.MeshPhysicalMaterial({ color: '#283541', metalness: 0.6, roughness: 0.06, envMapIntensity: 1.4, clearcoat: 1 }),
@@ -36,36 +36,41 @@ export async function crearTorres({ plan, renderer, grupo }) {
   const dentro = (p, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[i], b = P[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
   const torres = []; // { x, z, ang, pisos, muro, ud }
   let semilla = 7; const azar = () => (semilla = (semilla * 16807) % 2147483647) / 2147483647;
+  // Implantación según el render oficial: bloques perimetrales que forman patios en cada manzana (no torres sueltas).
+  // Cada bloque = módulos de 28 m estirados a lo largo del borde (sx), con cortes de 8-12 m entre bloques y esquinas libres.
   for (const e of plan.edificios) {
     const zona = plan.zonas.find(z => z.id === e.id); if (!zona) continue;
-    const q = zona.p.reduce((a, b) => (b.o.length > a.o.length ? b : a)); const P = q.o.map(WP), Hs = (q.h || []).map(h => h.map(WP));
-    // eje principal = lado más largo
-    let best = 0, ang = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (l > best) { best = l; ang = Math.atan2(b[1] - a[1], b[0] - a[0]); } }
-    const c = Math.cos(ang), s = Math.sin(ang), aLoc = ([x, z]) => [x * c + z * s, -x * s + z * c], aMun = ([u, v]) => [u * c - v * s, u * s + v * c];
-    const L = P.map(aLoc); let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9; for (const [u, v] of L) { u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); }
-    const res = e.tipo in PISOS_TIPO, ES = res ? 1 : 1.5, viv0 = e.viviendas || 0;
-    const lotes = (gu, gv) => { const du = LX * ES + gu, dv = LY * ES + gv;
-      const nu = Math.max(1, Math.floor((u1 - u0 + gu) / du)), nv = Math.max(1, Math.floor((v1 - v0 + gv) / dv));
-      const ou = (u0 + u1) / 2 - (nu - 1) * du / 2, ov = (v0 + v1) / 2 - (nv - 1) * dv / 2, slots = [];
-      for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
-        const cu = ou + i * du, cv = ov + j * dv, esq = [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, 0]].map(([a, b]) => aMun([cu + a * (LX * ES / 2 + 3), cv + b * (LY * ES / 2 + 3)]));
-        if (esq.every(p => dentro(p, P) && !Hs.some(h => dentro(p, h)))) slots.push(aMun([cu, cv]));
+    const q = zona.p.reduce((a, b) => (b.o.length > a.o.length ? b : a)); let P = q.o.map(WP);
+    // simplifica: quita vértices de bordes muy cortos
+    P = P.filter((p, i) => { const n = P[(i + 1) % P.length]; return Math.hypot(n[0] - p[0], n[1] - p[1]) > 6; });
+    if (P.length < 3) continue;
+    const cx = P.reduce((s, p) => s + p[0], 0) / P.length, cz = P.reduce((s, p) => s + p[1], 0) / P.length;
+    const res = e.tipo in PISOS_TIPO, viv = e.viviendas || 0;
+    const r0 = azar(), estilo = !res ? 'B' : r0 < 0.55 ? 'A' : r0 < 0.88 ? 'B' : 'C', muro = { A: 'ladrillo', B: 'blanco', C: 'crema' }[estilo];
+    const bloques = [];
+    for (let i = 0; i < P.length; i++) {
+      const A = P[i], B = P[(i + 1) % P.length], L = Math.hypot(B[0] - A[0], B[1] - A[1]); if (L < 34) continue;
+      const ux = (B[0] - A[0]) / L, uz = (B[1] - A[1]) / L; let nx = -uz, nz = ux;
+      const mx = (A[0] + B[0]) / 2, mz = (A[1] + B[1]) / 2; if ((cx - mx) * nx + (cz - mz) * nz < 0) { nx = -nx; nz = -nz; }
+      const prof = LY * (res ? 1 : 1.3), off = 6 + prof / 2, util = L - 2 * 14;
+      const nseg = Math.max(1, Math.round(util / 42)), hueco = nseg > 1 ? 10 : 0, seg = (util - hueco * (nseg - 1)) / nseg;
+      if (seg < 20) continue;
+      for (let k = 0; k < nseg; k++) {
+        const d = 14 + k * (seg + hueco) + seg / 2, x = A[0] + ux * d + nx * off, z = A[1] + uz * d + nz * off;
+        // que el bloque no quede fuera de la manzana (bordes cóncavos)
+        if (!dentro([x + nx * prof * 0.4, z + nz * prof * 0.4], P)) continue;
+        bloques.push({ x, z, ang: Math.atan2(uz, ux), sx: seg / LX, esc: res ? 1 : 1.3 });
       }
-      return slots; };
-    let slots = [];
-    for (const [gu, gv] of res ? [[16, 20], [13, 16], [10, 12]] : [[10, 12], [6, 8]]) { slots = lotes(gu, gv); if (!res || slots.length * APTOS_PISO * 15 >= viv0) break; }
-    if (!slots.length) slots.push(P.reduce((a, p) => [a[0] + p[0] / P.length, a[1] + p[1] / P.length], [0, 0]));
-    const viv = e.viviendas || 0;
-    let n = slots.length, pisos = 4;
-    if (res) { n = Math.min(slots.length, Math.max(1, Math.ceil(viv / (APTOS_PISO * PISOS_TIPO[e.tipo])))); pisos = Math.min(15, Math.ceil(viv / (APTOS_PISO * n))); }
-    const paso = slots.length / n, r0 = azar(), estilo = !res ? 'B' : e.tipo === 't4' ? (r0 < 0.6 ? 'B' : 'C') : e.tipo === 'mul' ? (r0 < 0.5 ? 'C' : 'B') : (r0 < 0.75 ? 'A' : 'C'), muro = { A: 'ladrillo', B: 'blanco', C: 'crema' }[estilo];
-    for (let k = 0; k < n; k++) {
-      const [x, z] = slots[Math.floor(k * paso + paso / 2) % slots.length];
-      const pk = res ? Math.min(15, Math.max(8, pisos + Math.round((azar() - 0.5) * 4))) : 4;
-      torres.push({ x, z, ang, pisos: pk, muro, estilo, esc: ES, ud: { id: `${e.id}-T${k + 1}`, nombre: `${e.id} · torre ${k + 1}`, uso: USO[e.tipo] || e.tipo, pisos: pk + 1, altura: H_BAJA + pk * H_PISO + 1.4,
-        viviendas: res ? pk * APTOS_PISO : null, area_oficial: e.area_oficial, etapa: e.anio, escenario: '01 · Futuro sin propuesta',
-        clase: 'Documentada (manzana y viviendas) · Interpretativa (torre, pisos)', fuente: 'Decreto 448/2023 plano 1/2 · render oficial del plan' } });
     }
+    if (!bloques.length) bloques.push({ x: cx, z: cz, ang: 0, sx: 1, esc: res ? 1 : 1.3 });
+    const aptos = bloques.reduce((s, b) => s + APTOS_PISO * b.sx, 0);
+    const base = res ? Math.min(14, Math.max(6, Math.ceil(viv / Math.max(1, aptos)))) : 3;
+    bloques.forEach((bl, k) => {
+      const pk = res ? Math.min(15, Math.max(5, base + [0, 2, -2, 3, -1][k % 5])) : base + (k % 2);
+      torres.push({ ...bl, pisos: pk, muro, estilo, ud: { id: `${e.id}-B${k + 1}`, nombre: `${e.id} · bloque ${k + 1}`, uso: USO[e.tipo] || e.tipo, pisos: pk + 1, altura: H_BAJA + pk * H_PISO + 1.4,
+        viviendas: res ? Math.round(pk * APTOS_PISO * bl.sx) : null, area_oficial: e.area_oficial, etapa: e.anio, escenario: '01 · Futuro sin propuesta',
+        clase: 'Documentada (manzana y viviendas) · Interpretativa (bloques según el render oficial)', fuente: 'Decreto 448/2023 plano 1/2 · render oficial del plan' } });
+    });
   }
 
   /* instancias: por muro (ladrillo/blanco) y por módulo; cada primitiva del GLB = un InstancedMesh con su material */
@@ -75,7 +80,7 @@ export async function crearTorres({ plan, renderer, grupo }) {
     const mats = { baja: [], piso: [], cubierta: [], alero: [] };
     for (const t of T) {
       q4.setFromAxisAngle(Y, -t.ang);
-      const esc = new THREE.Vector3(t.esc, 1, t.esc), base = (y) => m4.clone().compose(new THREE.Vector3(t.x, y, t.z), q4, esc);
+      const esc = new THREE.Vector3(t.sx || 1, 1, t.esc), base = (y) => m4.clone().compose(new THREE.Vector3(t.x, y, t.z), q4, esc);
       mats.baja.push([base(0), 0]); mats.alero.push([base(0), 0]);
       for (let p = 0; p < t.pisos; p++) mats.piso.push([base(H_BAJA + p * H_PISO), H_BAJA + p * H_PISO]);
       mats.cubierta.push([base(H_BAJA + t.pisos * H_PISO), H_BAJA + t.pisos * H_PISO]);
@@ -94,7 +99,7 @@ export async function crearTorres({ plan, renderer, grupo }) {
   }
   // volúmenes invisibles para seleccionar torre por torre
     for (const t of torres) {
-    const h = H_BAJA + t.pisos * H_PISO + 1.5, g = new THREE.BoxGeometry(LX * t.esc, h, LY * t.esc); g.translate(0, h / 2, 0);
+    const h = H_BAJA + t.pisos * H_PISO + 1.5, g = new THREE.BoxGeometry(LX * (t.sx || 1), h, LY * t.esc); g.translate(0, h / 2, 0);
     const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: '#C7FF27', transparent: true, opacity: 0, depthWrite: false })); m.position.set(t.x, 0, t.z); m.rotation.y = -t.ang; m.userData = t.ud; grupo.add(m); sel.push(m);
   }
   /* crecimiento: muestra solo los módulos por debajo de la altura h (las instancias están ordenadas por altura) */
