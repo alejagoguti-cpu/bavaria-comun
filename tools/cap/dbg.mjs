@@ -1,0 +1,10 @@
+import { createRequire } from 'module'; const puppeteer = createRequire('C:/Users/aleja/Documents/BACO-OBRA/package.json')('puppeteer-core');
+const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', protocolTimeout: 600000, args: ['--use-angle=d3d11', '--ignore-gpu-blocklist'] });
+const p = await b.newPage(); await p.setViewport({ width: 1600, height: 900 });
+await p.goto('http://localhost:8095/index.html', { waitUntil: 'domcontentloaded' }); await new Promise(r => setTimeout(r, 20000));
+await p.click('#empezar'); await new Promise(r => setTimeout(r, 2000));
+await p.evaluate(() => window.__k.ir(12, true)); await new Promise(r => setTimeout(r, 9000));
+console.log(await p.evaluate(() => { const { W, X } = window.__k; const B = X.B; const g = B.C.modulo.grupo, v = new X.THREE.Vector3(); g.getWorldPosition(v);
+  const losa = W.capas.losa; const lb = new X.THREE.Box3().setFromObject(losa);
+  return JSON.stringify({ cam: W.cam.position.toArray().map(Math.round), near: W.cam.near, far: W.cam.far, obj: X.camT.o.toArray().map(Math.round), modulo: v.toArray().map(x => +x.toFixed(1)), visible: g.visible, padreVis: B.base.visible, punto: B.puntoLab('bio'), losaY: [lb.min.y, lb.max.y], losaVis: losa.visible, gdy: W.gfoto?.dy, google: !!W.google }); }));
+await b.close();
