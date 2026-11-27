@@ -61,7 +61,7 @@ export function crearGoogle(W, U) {
           c = mix(vec3(l), c, 0.86);
           c = pow(c, vec3(1.06)) * vec3(0.97, 1.0, 1.035) * uLuz * 1.12;
           // lejanía: solo más allá de ~25 km se funde hacia el tono pizarra del horizonte (la ciudad queda nítida)
-          c = mix(c, vec3(0.024, 0.034, 0.05), smoothstep(22000.0, 62000.0, distance(vWPg, cameraPosition)));
+          c = mix(c, vec3(0.70, 0.76, 0.80), smoothstep(6000.0, 40000.0, distance(vWPg, cameraPosition)) * 0.85);
           // ESCANEO de la apertura: al este de uScan la ciudad es un esquema de datos (tinta + retícula); al oeste, la foto real
           if (uScan < 5e5) {
             float sd = vWPg.x - uScan;

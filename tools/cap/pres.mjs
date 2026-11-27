@@ -5,7 +5,7 @@ const T = [1.49, 9.6, 31.6, 46.05, 64.2, 74.9, 88.9, 109.4, 120.3, 129.45, 147.7
 const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', protocolTimeout: 600000, args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage(); await p.setViewport({ width: 1600, height: 900 }); const errs = new Set();
 p.on('pageerror', e => errs.add(e.message)); p.on('response', r => { if (r.status() >= 400) errs.add(r.status() + ' ' + r.url()); }); p.on('console', m => { if (m.type() === 'error') errs.add(m.text().slice(0, 200)); });
-await p.goto(url, { waitUntil: 'domcontentloaded' }); await new Promise(r => setTimeout(r, 20000));
+await p.goto(url, { waitUntil: 'domcontentloaded' }); await p.waitForFunction('window.__k', { timeout: 120000 }).catch(() => {}); await new Promise(r => setTimeout(r, 8000));
 if (!(await p.evaluate(() => !!window.__k))) { console.log('SIN __k:', [...errs].join(' || ')); process.exit(1); }
 await p.click('#empezar'); await new Promise(r => setTimeout(r, 3000));
 for (const it of lista.split(',')) {

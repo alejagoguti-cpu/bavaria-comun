@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { WP } from './geo.js';
 
 const LX = 28, LY = 17, H_BAJA = 4.2, H_PISO = 3.0, APTOS_PISO = 8;
-const PISOS_TIPO = { vis: 20, vip: 20, t4: 16, mul: 14 };
+const PISOS_TIPO = { vis: 14, vip: 14, t4: 12, mul: 12 }; // como el render oficial: torres de 8 a 15 pisos
 const USO = { vis: 'Vivienda VIS', vip: 'Vivienda VIP', t4: 'Vivienda no VIS (tipo 4)', mul: 'Uso múltiple', com: 'Comercio y servicios', dot: 'Dotacional', eq: 'Equipamiento' };
 
 function pbr(base, rep, ani, extra = {}) {
@@ -19,13 +19,16 @@ export async function crearTorres({ plan, renderer, grupo }) {
   const ani = renderer.capabilities.getMaxAnisotropy();
   const gl = await new GLTFLoader().loadAsync('./bavaria/modelos/torre.glb');
   const M = {
-    ladrillo: pbr('red_brick_03', 1 / 1.2, ani, { color: '#d58a68', roughness: 0.95 }),
-    blanco: pbr('white_plaster_02', 1 / 2.2, ani, { color: '#f1eee8' }),
-    losa: pbr('concrete_wall_008', 1 / 3, ani, { color: '#d8d4cc' }),
+    ladrillo: pbr('red_brick_03', 1 / 1.2, ani, { color: '#b9876c', roughness: 0.95 }),
+    blanco: pbr('white_plaster_02', 1 / 2.2, ani, { color: '#ffffff', emissive: '#2a2a2a', emissiveIntensity: 0.25 }),
+    losa: pbr('concrete_wall_008', 1 / 3, ani, { color: '#eceae5' }),
     verde: pbr('leafy_grass', 1 / 2, ani),
     vidrio: new THREE.MeshPhysicalMaterial({ color: '#283541', metalness: 0.6, roughness: 0.06, envMapIntensity: 1.4, clearcoat: 1 }),
     marco: new THREE.MeshStandardMaterial({ color: '#2f3133', metalness: 0.7, roughness: 0.4 }),
     oscuro: new THREE.MeshStandardMaterial({ color: '#141516', roughness: 1 }),
+    crema: pbr('white_plaster_02', 1 / 2.2, ani, { color: '#efe4d0' }),
+    baranda: new THREE.MeshPhysicalMaterial({ color: '#a9c4cc', metalness: 0, roughness: 0.05, transmission: 0.6, transparent: true, opacity: 0.45 }),
+    metal: new THREE.MeshStandardMaterial({ color: '#3a3b3d', metalness: 0.8, roughness: 0.35 }),
   };
   const matDe = (n, muro) => n === 'muro' ? M[muro] : (M[n] || M.losa);
 
@@ -50,16 +53,16 @@ export async function crearTorres({ plan, renderer, grupo }) {
       }
       return slots; };
     let slots = [];
-    for (const [gu, gv] of res ? [[14, 18], [11, 14], [8, 10], [6, 8]] : [[10, 12], [6, 8]]) { slots = lotes(gu, gv); if (!res || slots.length * APTOS_PISO * 22 >= viv0) break; }
+    for (const [gu, gv] of res ? [[16, 20], [13, 16], [10, 12]] : [[10, 12], [6, 8]]) { slots = lotes(gu, gv); if (!res || slots.length * APTOS_PISO * 15 >= viv0) break; }
     if (!slots.length) slots.push(P.reduce((a, p) => [a[0] + p[0] / P.length, a[1] + p[1] / P.length], [0, 0]));
     const viv = e.viviendas || 0;
     let n = slots.length, pisos = 4;
-    if (res) { n = Math.min(slots.length, Math.max(1, Math.ceil(viv / (APTOS_PISO * PISOS_TIPO[e.tipo])))); pisos = Math.min(22, Math.ceil(viv / (APTOS_PISO * n))); }
-    const paso = slots.length / n, muro = e.tipo === 't4' || !res ? 'blanco' : (e.tipo === 'mul' && azar() < 0.4 ? 'blanco' : 'ladrillo');
+    if (res) { n = Math.min(slots.length, Math.max(1, Math.ceil(viv / (APTOS_PISO * PISOS_TIPO[e.tipo])))); pisos = Math.min(15, Math.ceil(viv / (APTOS_PISO * n))); }
+    const paso = slots.length / n, r0 = azar(), estilo = !res ? 'B' : e.tipo === 't4' ? (r0 < 0.6 ? 'B' : 'C') : e.tipo === 'mul' ? (r0 < 0.5 ? 'C' : 'B') : (r0 < 0.75 ? 'A' : 'C'), muro = { A: 'ladrillo', B: 'blanco', C: 'crema' }[estilo];
     for (let k = 0; k < n; k++) {
       const [x, z] = slots[Math.floor(k * paso + paso / 2) % slots.length];
-      const pk = res ? Math.min(24, Math.max(8, pisos + Math.round((azar() - 0.5) * 4))) : 3;
-      torres.push({ x, z, ang, pisos: pk, muro, esc: ES, ud: { id: `${e.id}-T${k + 1}`, nombre: `${e.id} · torre ${k + 1}`, uso: USO[e.tipo] || e.tipo, pisos: pk + 1, altura: H_BAJA + pk * H_PISO + 1.4,
+      const pk = res ? Math.min(15, Math.max(8, pisos + Math.round((azar() - 0.5) * 4))) : 4;
+      torres.push({ x, z, ang, pisos: pk, muro, estilo, esc: ES, ud: { id: `${e.id}-T${k + 1}`, nombre: `${e.id} · torre ${k + 1}`, uso: USO[e.tipo] || e.tipo, pisos: pk + 1, altura: H_BAJA + pk * H_PISO + 1.4,
         viviendas: res ? pk * APTOS_PISO : null, area_oficial: e.area_oficial, etapa: e.anio, escenario: '01 · Futuro sin propuesta',
         clase: 'Documentada (manzana y viviendas) · Interpretativa (torre, pisos)', fuente: 'Decreto 448/2023 plano 1/2 · render oficial del plan' } });
     }
@@ -67,8 +70,8 @@ export async function crearTorres({ plan, renderer, grupo }) {
 
   /* instancias: por muro (ladrillo/blanco) y por módulo; cada primitiva del GLB = un InstancedMesh con su material */
   const inst = [], sel = [], m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), Y = new THREE.Vector3(0, 1, 0), uno = new THREE.Vector3(1, 1, 1);
-  for (const muro of ['ladrillo', 'blanco']) {
-    const T = torres.filter(t => t.muro === muro); if (!T.length) continue;
+  for (const estilo of ['A', 'B', 'C']) {
+    const T = torres.filter(t => t.estilo === estilo); const muro = { A: 'ladrillo', B: 'blanco', C: 'crema' }[estilo]; if (!T.length) continue;
     const mats = { baja: [], piso: [], cubierta: [], alero: [] };
     for (const t of T) {
       q4.setFromAxisAngle(Y, -t.ang);
@@ -78,7 +81,7 @@ export async function crearTorres({ plan, renderer, grupo }) {
       mats.cubierta.push([base(H_BAJA + t.pisos * H_PISO), H_BAJA + t.pisos * H_PISO]);
     }
     for (const nombre of Object.keys(mats)) {
-      const nodo = gl.scene.getObjectByName(nombre); if (!nodo) continue;
+      const nodo = gl.scene.getObjectByName(nombre === 'piso' ? 'piso_' + estilo : nombre); if (!nodo) continue;
       const lista = mats[nombre].sort((x, y) => x[1] - y[1]), ys = lista.map(x => x[1]);
       const prims = []; nodo.traverse(o => { if (o.isMesh) prims.push(o); });
       for (const pr of prims) {

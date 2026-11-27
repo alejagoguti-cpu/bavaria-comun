@@ -24,7 +24,7 @@ def mat(n, c):
     m = bpy.data.materials.new(n); m.use_nodes = True
     b = next(x for x in m.node_tree.nodes if x.type == 'BSDF_PRINCIPLED'); b.inputs['Base Color'].default_value = (*c, 1)
     MATS[n] = m; return m
-for n, c in [('muro', (.55, .3, .2)), ('vidrio', (.15, .2, .25)), ('marco', (.2, .2, .2)), ('losa', (.75, .74, .7)), ('verde', (.3, .45, .2)), ('oscuro', (.08, .08, .08))]: mat(n, c)
+for n, c in [('baranda', (.6, .7, .75)), ('metal', (.25, .25, .27)), ('muro', (.55, .3, .2)), ('vidrio', (.15, .2, .25)), ('marco', (.2, .2, .2)), ('losa', (.75, .74, .7)), ('verde', (.3, .45, .2)), ('oscuro', (.08, .08, .08))]: mat(n, c)
 
 class Malla:
     def __init__(s): s.bm = bmesh.new(); s.uv = s.bm.loops.layers.uv.new('UVMap'); s.mi = {}
@@ -70,6 +70,52 @@ def fachada(M, largo, eje, signo, z0, H, tipo='piso'):
             caja(a0, a1, REH - .04, REH + .02, z0 + sill, z0 + sill + .06, 'marco')
             caja(a0, a1, REH - .03, REH + .01, z0 + 1.0, z0 + 1.04, 'marco')                                    # baranda de la ventana piso-techo
         caja(-0.08, largo + 0.08, -0.08, T, z0 + H - losa, z0 + H, 'losa')                                     # losa saliente
+    elif tipo == 'pisoA':   # ladrillo terracota: vanos alternos con balcón rehundido 1,4 m y baranda de vidrio
+        losa = 0.28
+        for i in range(n):
+            u = i * b
+            if i % 2 == 0 and 0 < i < n - 1:
+                P = 1.4
+                caja(u, u + .25, 0, P, z0, z0 + H - losa, 'muro'); caja(u + b - .25, u + b, 0, P, z0, z0 + H - losa, 'muro')   # muros laterales del balcón
+                caja(u + .25, u + b - .25, P, P + .02, z0, z0 + 2.45, 'vidrio')                                                   # puerta-ventana al fondo
+                for p0 in [u + .25, u + b / 2 - .03, u + b - .31]: caja(p0, p0 + .06, P - .04, P + .02, z0, z0 + 2.45, 'marco')
+                caja(u + .25, u + b - .25, P, P + T, z0 + 2.45, z0 + H - losa, 'muro')                                          # dintel
+                caja(u + .25, u + b - .25, 0.02, 0.04, z0 + .1, z0 + 1.05, 'baranda')                                           # baranda de vidrio
+                caja(u + .25, u + b - .25, 0.0, 0.06, z0 + 1.05, z0 + 1.1, 'metal')                                             # pasamanos
+            else:
+                ww = b * 0.55; a0 = u + (b - ww) / 2; a1 = a0 + ww; sill, head = 0.85, 2.45
+                caja(u, a0, 0, T, z0, z0 + H - losa, 'muro'); caja(a1, u + b, 0, T, z0, z0 + H - losa, 'muro')
+                caja(a0, a1, 0, T, z0, z0 + sill, 'muro'); caja(a0, a1, 0, T, z0 + head, z0 + H - losa, 'muro')
+                caja(a0 - .03, a1 + .03, -0.07, REH, z0 + sill - .06, z0 + sill, 'losa')
+                caja(a0, a1, REH, REH + .02, z0 + sill, z0 + head, 'vidrio')
+                for (p0, p1) in [(a0, a0 + .06), (a1 - .06, a1), ((a0 + a1) / 2 - .03, (a0 + a1) / 2 + .03)]: caja(p0, p1, REH - .04, REH + .02, z0 + sill, z0 + head, 'marco')
+        caja(-0.12, largo + 0.12, -0.12, T, z0 + H - losa, z0 + H, 'losa')
+    elif tipo == 'pisoB':   # blanco: franja de antepecho + ventana corrida con montantes cada 1,5 m y losa marcada
+        losa = 0.32
+        caja(0, largo, -0.05, T, z0, z0 + 0.95, 'muro')                                   # antepecho continuo
+        caja(0, largo, REH, REH + .02, z0 + .95, z0 + H - losa, 'vidrio')                 # ventana corrida
+        k = max(2, round(largo / 1.5))
+        for i in range(k + 1): uu = i * largo / k; caja(uu - .05, uu + .05, REH - .06, REH + .02, z0 + .95, z0 + H - losa, 'marco')
+        caja(0, largo, REH - .06, REH + .02, z0 + .95, z0 + 1.0, 'marco')
+        for uu in [0, largo]: caja(uu - .3 if uu else 0, uu if uu else .3, 0, T, z0, z0 + H - losa, 'muro')   # esquinas macizas
+        caja(-0.25, largo + 0.25, -0.35, T, z0 + H - losa, z0 + H, 'losa')                # losa-alero de 35 cm (franja blanca horizontal)
+    elif tipo == 'pisoC':   # crema: ventanas de piso a techo y balcones salientes alternos con baranda de barrotes
+        losa = 0.28
+        for i in range(n):
+            u = i * b; ww = b * 0.62; a0 = u + (b - ww) / 2; a1 = a0 + ww
+            caja(u, a0, 0, T, z0, z0 + H - losa, 'muro'); caja(a1, u + b, 0, T, z0, z0 + H - losa, 'muro')
+            caja(a0, a1, 0, T, z0 + 2.5, z0 + H - losa, 'muro')
+            caja(a0, a1, REH, REH + .02, z0, z0 + 2.5, 'vidrio')
+            for (p0, p1) in [(a0, a0 + .06), (a1 - .06, a1), ((a0 + a1) / 2 - .03, (a0 + a1) / 2 + .03)]: caja(p0, p1, REH - .04, REH + .02, z0, z0 + 2.5, 'marco')
+            if (i + (round(z0 / 3) % 2)) % 2 == 0:                                         # balcón saliente en tresbolillo
+                caja(u + .1, u + b - .1, -1.3, 0, z0 - .02, z0 + .16, 'losa')
+                caja(u + .1, u + b - .1, -1.3, -1.25, z0 + .95, z0 + 1.0, 'metal')
+                for e0 in [u + .1, u + b - .15]: caja(e0, e0 + .05, -1.3, 0, z0 + .95, z0 + 1.0, 'metal')
+                xx = u + .2
+                while xx < u + b - .2: caja(xx, xx + .025, -1.29, -1.265, z0 + .16, z0 + .95, 'metal'); xx += .14
+            else:
+                caja(a0, a1, REH - .03, REH + .01, z0 + 1.0, z0 + 1.04, 'metal')
+        caja(-0.08, largo + 0.08, -0.08, T, z0 + H - losa, z0 + H, 'losa')
     elif tipo == 'baja':
         caja(0, largo, -0.05, T, z0 + H - 0.5, z0 + H, 'losa')
         caja(0, 0.5, 0, 0.5, z0, z0 + H - 0.5, 'losa'); caja(largo - 0.5, largo, 0, 0.5, z0, z0 + H - 0.5, 'losa')
@@ -88,6 +134,7 @@ def cuerpo(tipo, H):
     return M
 
 ob = cuerpo('piso', 3.0).objeto('piso')
+pisos_extra = [cuerpo(t, 3.0).objeto(n) for t, n in [('pisoA', 'piso_A'), ('pisoB', 'piso_B'), ('pisoC', 'piso_C')]]
 bj = cuerpo('baja', 4.2).objeto('baja')
 # alero de acceso en la planta baja
 M = Malla(); M.caja(-4, 4, LY / 2, LY / 2 + 2.4, 3.2, 3.45, 'losa'); al = M.objeto('alero')
@@ -106,4 +153,4 @@ for i in range(6): M.caja(-10 + i * 1.2, -9.4 + i * 1.2, 3, 7, .45, .9, 'marco')
 cb = M.objeto('cubierta')
 
 bpy.ops.export_scene.gltf(filepath=OUT, export_format='GLB', use_selection=False, export_apply=True, export_yup=True, export_materials='PLACEHOLDER' if False else 'EXPORT')
-print('OK', OUT, {o.name: len(o.data.polygons) for o in [ob, bj, cb, al]})
+print('OK', OUT, {o.name: len(o.data.polygons) for o in [ob, bj, cb, al] + pisos_extra})

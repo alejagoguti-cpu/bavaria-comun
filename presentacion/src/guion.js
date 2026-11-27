@@ -55,8 +55,8 @@ export const CAPITULOS = [
           [0.12, () => X.ed.cifra({ v: 14002, texto: 'viviendas previstas', fuente: 'Alcaldía de Bogotá · Decreto 448 de 2023', x: 4.5, y: 52 })],
           [0.42, (d) => X.vuelo([E(X, 'predioAlto')], d * 0.25)],
           [0.55, (d) => { B.C.fundir(B.C.carros, 1, 1.2); B.C.verAvenida('Av. Boyacá', true); B.C.verAvenida('Av. de las Américas', true); X.gsap.to(B.C.carrosLento, { v: 0.15, duration: d * 0.25 }); X.ed.rotulo('podrían afectar la *movilidad*'); }],
-          [0.69, () => { B.C.fundir(B.C.anillos, 1, 1.5); X.ed.rotulo('la *presión inmobiliaria*'); }],
-          [0.82, () => { B.C.fundir(B.C.taladas, 1, 1); X.ed.rotulo('y las *condiciones ecológicas*'); X.ed.cifra({ v: B.C.nTaladas, texto: 'árboles en manzanas y vías del plan', fuente: 'copas detectadas × plano oficial', x: 4.5, y: 70 }); }],
+          [0.69, () => X.ed.rotulo('la *presión inmobiliaria*')],
+          [0.82, () => { X.ed.rotulo('y las *condiciones ecológicas*'); X.ed.cifra({ v: B.C.nTaladas, texto: 'árboles en manzanas y vías del plan', fuente: 'copas detectadas × plano oficial', x: 4.5, y: 70 }); }],
         ]);
       }),
     ],

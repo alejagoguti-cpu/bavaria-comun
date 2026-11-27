@@ -7,9 +7,9 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 /* Fotograma clave del simulador (cielo.js) entre la puesta (e = 0°) y la hora dorada (e = 5°) */
 // LOOK 2026-11-26: fuera el atardecer. Luz de día neutra y nítida; cielo sobrio en degradado tinta → pizarra fría
 // (combina con el formato: tinta #0b0d10, lima #cfff5e). Sin nubes, sin disco solar, sin niebla.
-export const HORA = {
-  top: new THREE.Color(0x07090c), mid: new THREE.Color(0x161d26), bot: new THREE.Color(0x2b3640), hor: new THREE.Color(0x4a5762),
-  fog: new THREE.Color(0x2b3640), hemi: new THREE.Color(0xdfe5ea), suelo: new THREE.Color(0x2a2d30), sol: new THREE.Color(0xfffaf2),
+export const HORA = { // Bavaria: día con bruma, como el render oficial
+  top: new THREE.Color(0x6f98c4), mid: new THREE.Color(0xa9c3dc), bot: new THREE.Color(0xd9e2e8), hor: new THREE.Color(0xe6eae9),
+  fog: new THREE.Color(0xd9e2e8), hemi: new THREE.Color(0xeef2f5), suelo: new THREE.Color(0x5c6650), sol: new THREE.Color(0xfffaf2),
 };
 // sol alto (mediodía), un poco al occidente y al sur: sombras cortas y limpias
 export const SOL_DIR = new THREE.Vector3(-0.42, 0.82, 0.38).normalize();

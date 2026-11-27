@@ -25,11 +25,11 @@ export async function crearPlanParcial({ scene, renderer }) {
   const pbr = (b, rep, extra = {}) => { const t = (s, c) => { const x = TL.load('./bavaria/tex/' + b + '_' + s + '_1k.jpg'); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.repeat.set(rep, rep); x.anisotropy = ani; if (c) x.colorSpace = THREE.SRGBColorSpace; return x; };
     return new THREE.MeshStandardMaterial({ map: t('diff', 1), normalMap: t('nor_gl'), roughnessMap: t('rough'), ...extra }); };
   // ShapeGeometry da UV = coordenadas del mundo en metros: repeat = 1 / tamaño de la textura
-  const mTierra = pbr('leafy_grass', 1 / 4, { color: '#5d6a48' });
-  const mCalzada = pbr('concrete_wall_008', 1 / 6, { color: '#3a3c3f', roughness: 0.95 });
-  const mAnden = pbr('concrete_wall_008', 1 / 2.5, { color: '#d6d1c7' });
-  const mPrado = pbr('leafy_grass', 1 / 3, { color: '#66784a' });
-  const mLote = pbr('leafy_grass', 1 / 3.5, { color: '#6c7b52' });
+  const mTierra = pbr('leafy_grass', 1 / 4, { color: '#8fa36a' });
+  const mCalzada = pbr('concrete_wall_008', 1 / 6, { color: '#8d8f91', roughness: 0.95 });
+  const mAnden = pbr('concrete_wall_008', 1 / 2.5, { color: '#e2ddd2' });
+  const mPrado = pbr('leafy_grass', 1 / 3, { color: '#9ab573' });
+  const mLote = pbr('leafy_grass', 1 / 3.5, { color: '#94ab6c' });
   const borde = { o: P.borde.map(([u, v]) => [u, v]) }; // el borde viene en el marco del modelo
   plano([borde], mTierra, 0.05);
   for (const z of P.zonas) {
